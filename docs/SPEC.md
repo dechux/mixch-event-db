@@ -307,3 +307,22 @@ Recoverability
 Extensibility
 
 These have higher priority than adding new features.
+
+# 16.Schedule Drift Policy
+
+GitHub Actions schedule may be delayed or skipped.
+
+MixArchive must not assume that scheduled time equals actual capture time.
+
+All ranking records must store:
+
+- scheduledAt
+- capturedAt
+
+Analysis must use capturedAt.
+
+Last day gain is calculated using:
+
+finalPoints - latest points before final day
+
+If expected runs are missing, dataQuality must record the gap.
