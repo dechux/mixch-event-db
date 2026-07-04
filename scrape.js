@@ -2,18 +2,16 @@ import { loadConfig } from "./lib/config.js";
 import { Logger } from "./lib/logger.js";
 import { Storage } from "./lib/storage.js";
 import { toJstIsoString } from "./lib/datetime.js";
-import { fetchEventsPage } from "./lib/scraper.js";
+import { fetchEvents } from "./lib/scraper.js";
 
 const logger = new Logger("MixArchive");
 
 async function main() {
   logger.info("MixArchive starting...");
 
-  // 設定読み込み
   const config = loadConfig();
   logger.info("Config loaded.");
 
-  // ストレージ初期化
   const storage = new Storage({
     baseDir: "data",
     backupDir: "data/backups",
@@ -23,19 +21,22 @@ async function main() {
   logger.info("Storage initialized.");
   logger.info(`Current JST time: ${toJstIsoString()}`);
 
-  // イベント一覧ページ取得
-  logger.info("Fetching MixChannel events page...");
+  logger.info("Fetching MixChannel events...");
 
-  const page = await fetchEventsPage({
+  const result = await fetchEvents({
     headless: config.scraping?.headless ?? true,
     timeoutMs: 60000,
     waitMs: 5000
   });
 
-  logger.info(`Fetched: ${page.url}`);
-  logger.info(`HTML Length: ${page.html.length.toLocaleString()} bytes`);
+  logger.info(`Fetched: ${result.url}`);
+  logger.info(`Parsed events: ${result.events.length}`);
 
-  logger.success("Initial scraping completed.");
+  for (const event of result.events.slice(0, 5)) {
+    logger.info(`${event.eventId} / ${event.rawText} / ${event.eventUrl}`);
+  }
+
+  logger.success("Event scraping completed.");
   logger.finish();
 }
 
